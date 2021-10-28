@@ -1,0 +1,125 @@
+apiVersion: 1.0.0
+metadata:
+  name: springboot
+projects:
+  - name: springboot
+    source:
+      location: 'https://github.com/rhc-na-sm3scale-team/springboot.git'
+      type: git
+components:
+  - id: redhat/java11/latest
+    preferences:
+      java.server.launchMode: Standard
+    type: chePlugin
+  - mountSources: true
+    endpoints:
+      - name: 8080-tcp
+        port: 8080
+    memoryLimit: 512Mi
+    type: dockerimage
+    volumes:
+      - name: m2
+        containerPath: /home/jboss/.m2
+    alias: maven
+    image: 'registry.redhat.io/codeready-workspaces/plugin-java11-rhel8@sha256:d0337762e71fd4badabcb38a582b2f35e7e7fc1c9c0f2e841e339d45b7bd34ed'
+    env:
+      - value: $(JAVA_OPTS)
+        name: MAVEN_OPTS
+      - value: '-XX:MaxRAMPercentage=50.0 -XX:+UseParallelGC -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xms20m -Djava.security.egd=file:/dev/./urandom -Duser.home=/home/jboss'
+        name: JAVA_OPTS
+  - id: sonarsource/sonarlint-vscode/latest
+    type: chePlugin
+    preferences:
+      sonarlint.connectedMode.connections.sonarcloud: >
+        [{
+          "connectionId": "sonarcloud",
+          "organizationKey": "infosec812-github",
+          "token": "07c55d49dcae384ad64611a7529102b656d4118c"
+        }]
+      sonarlint.connectedMode.project: >
+        {
+          "projectKey": "vertx-openapi-jooq-multimodule",
+          "connectionId": "sonarcloud"
+        }
+  - id: ms-kubernetes-tools/vscode-kubernetes-tools/latest
+    type: chePlugin
+  - id: redhat/vscode-openshift-connector/latest
+    type: chePlugin
+  - id: redhat/vscode-xml/latest
+    type: chePlugin
+  - id: redhat/vscode-yaml/latest
+    type: chePlugin
+  - id: redhat/dependency-analytics/latest
+    type: chePlugin
+  - mountSources: true
+    command:
+      - sleep
+      - infinity
+    memoryLimit: 256Mi
+    type: dockerimage
+    alias: openapi
+    image: 'docker.io/openapitools/openapi-generator-cli:latest'
+  - mountSources: true
+    command:
+      - sleep
+      - infinity
+    memoryLimit: 128Mi
+    type: dockerimage
+    alias: 3scale
+    image: 'registry.redhat.io/3scale-amp2/toolbox-rhel7:1.5.0'
+commands:
+  - name: 1. Build
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/api'
+        type: exec
+        command: 'MAVEN_OPTS="-Xmx200m" && mvn -Duser.home=${HOME} -DskipTestsclean install'
+        component: maven
+  - name: 2. Run
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/api'
+        type: exec
+        command: 'MAVEN_OPTS="-Xmx200m" && mvn -Duser.home=${HOME} -Dvertx.disableDnsResolver=true vertx:run'
+        component: maven
+  - name: 3. Run in debug mode
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/api'
+        type: exec
+        command: 'MAVEN_OPTS="-Xmx200m" && mvn -Duser.home=${HOME} -DskipTests vertx:debug'
+        component: maven
+  - name: 4. Run tests
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/api'
+        type: exec
+        command: 'MAVEN_OPTS="-Xmx200m" && mvn -Duser.home=${HOME} -DskipTests verify '
+        component: maven
+  - name: 5. Log into deployment cluster
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/api'
+        type: exec
+        command: |
+          echo
+          echo "Before you can deploy this application to an openshift cluster,"
+          echo "you must run 'oc login ...' in the maven terminal."
+          echo
+        component: maven
+  - name: 6. Deploy to OpenShift
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/api'
+        type: exec
+        command: 'MAVEN_OPTS="-Xmx200m" &&  mvn oc:apply -DskipTests -Dvertx.disableDnsResolver=true'
+        component: maven
+  - name: Debug remote java application
+    actions:
+      - referenceContent: |
+          {
+           "version": "0.2.0",
+           "configurations": [
+             {
+               "type": "java",
+               "name": "Debug (Attach) - Remote",
+               "request": "attach",
+               "hostName": "localhost",
+               "port": 5005
+             }]
+           }
+        type: vscode-launch

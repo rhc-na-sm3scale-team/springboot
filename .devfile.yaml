@@ -70,31 +70,31 @@ components:
 commands:
   - name: 1. Build
     actions:
-      - workdir: '${CHE_PROJECTS_ROOT}/api'
+      - workdir: '${CHE_PROJECTS_ROOT}/springboot'
         type: exec
         command: 'MAVEN_OPTS="-Xmx200m" && mvn -Duser.home=${HOME} -DskipTestsclean install'
         component: maven
   - name: 2. Run
     actions:
-      - workdir: '${CHE_PROJECTS_ROOT}/api'
+      - workdir: '${CHE_PROJECTS_ROOT}/springboot'
         type: exec
         command: 'MAVEN_OPTS="-Xmx200m" && mvn -Duser.home=${HOME} -Dvertx.disableDnsResolver=true vertx:run'
         component: maven
   - name: 3. Run in debug mode
     actions:
-      - workdir: '${CHE_PROJECTS_ROOT}/api'
+      - workdir: '${CHE_PROJECTS_ROOT}/springboot'
         type: exec
         command: 'MAVEN_OPTS="-Xmx200m" && mvn -Duser.home=${HOME} -DskipTests vertx:debug'
         component: maven
   - name: 4. Run tests
     actions:
-      - workdir: '${CHE_PROJECTS_ROOT}/api'
+      - workdir: '${CHE_PROJECTS_ROOT}/springboot'
         type: exec
         command: 'MAVEN_OPTS="-Xmx200m" && mvn -Duser.home=${HOME} -DskipTests verify '
         component: maven
   - name: 5. Log into deployment cluster
     actions:
-      - workdir: '${CHE_PROJECTS_ROOT}/api'
+      - workdir: '${CHE_PROJECTS_ROOT}/springboot'
         type: exec
         command: |
           echo
@@ -104,7 +104,7 @@ commands:
         component: maven
   - name: 6. Deploy to OpenShift
     actions:
-      - workdir: '${CHE_PROJECTS_ROOT}/api'
+      - workdir: '${CHE_PROJECTS_ROOT}/springboot'
         type: exec
         command: 'MAVEN_OPTS="-Xmx200m" &&  mvn oc:apply -DskipTests -Dvertx.disableDnsResolver=true'
         component: maven

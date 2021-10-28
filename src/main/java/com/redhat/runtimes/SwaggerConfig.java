@@ -12,7 +12,6 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import javax.servlet.ServletContext;
-import java.util.List;
 
 @Configuration
 @EnableSwagger2
@@ -28,7 +27,7 @@ public class SwaggerConfig {
 				.directModelSubstitute(java.time.LocalDate.class, java.sql.Date.class)
 				.directModelSubstitute(java.time.OffsetDateTime.class, java.util.Date.class)
 				.apiInfo(apiInfo());
-	}
+    }
 	
 	ApiInfo apiInfo() {
 		return new ApiInfoBuilder()

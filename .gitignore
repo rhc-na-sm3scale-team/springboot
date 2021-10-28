@@ -1,0 +1,9 @@
+src/gen
+target
+.openapi-generator
+templates
+.idea
+**/*.iml
+.settings
+.classpath
+.project

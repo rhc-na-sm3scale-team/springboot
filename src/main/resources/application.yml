@@ -1,10 +1,10 @@
 ---
 spring:
   datasource:
-    username: ${POSTGRES_USERNAME:test_user}
-    password: ${POSTGRES_PASSWORD:password}
-    url: jdbc:postgresql://${DB_SERVICE_NAME:surveydb}:5432/${POSTGRES_DATABASE_NAME:surveydb}
-    driver-class-name: org.postgresql.Driver
+    username: sa
+    password: ''
+    url: jdbc:h2:mem:todos
+    driver-class-name: org.h2.Driver
   data:
     jpa:
       repositories:
@@ -14,17 +14,15 @@ spring:
       WRITE_DATES_AS_TIMESTAMPS: false
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create-drop
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQL10Dialect
-
+        dialect: org.hibernate.dialect.H2Dialect
 springfox:
   documentation:
     swagger:
       v2:
         path: /api-docs
-
 logging:
   level:
     com.redhat.consultant360: INFO
